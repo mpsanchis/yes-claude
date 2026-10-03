@@ -1,0 +1,8 @@
+[package]
+name = "yes-claude-tmux-actuator"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { workspace = true, features = ["process", "rt", "sync", "time"] }
+yes-claude-api = { workspace = true }

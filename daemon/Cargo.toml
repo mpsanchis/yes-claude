@@ -3,4 +3,15 @@ name = "yes-claude-daemon"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "yes-claude-d"
+path = "src/main.rs"
+
 [dependencies]
+tokio = { workspace = true }
+anyhow = { workspace = true }
+serde_json = { workspace = true }
+yes-claude-api = { workspace = true }
+yes-claude-tmux-actuator = { workspace = true }
+yes-claude-tmux-model = { workspace = true }
+yes-claude-tmux-monitor = { workspace = true }
