@@ -1,0 +1,7 @@
+[workspace]
+members = [
+  "tmux-model",
+  "tmux-monitor",
+  "tui",
+  "types"
+]
