@@ -12,6 +12,9 @@ The system designed clearly has different tasks that are independent in their sc
   - Has one websocket open to communicate with clients:
     - Received messages from browsers are forwarded to the tmux pane model
     - Received messages from the tmux pane model are forwarded to the browsers
+- Socker server
+  - Similar to web server, but serves socket connections
+  - Provides each connection with a reference to the communication channels
 - Tmux monitor
   - Periodically polls tmux, gets its data, and forwards it to the tmux pane model
 - TUI
