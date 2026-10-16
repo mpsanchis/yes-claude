@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
-use yes_claude_types::{ClaudePane, PaneState};
+use yes_claude_types::{AIAgentPane, PaneState};
 
 /// Messages sent to the model to update its state.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum UpdateModelEvent {
-    /// Snapshot of all Claude panes currently found in tmux.
-    UpdatePanes(Vec<ClaudePane>),
+    /// Snapshot of all AI agent panes currently found in tmux.
+    UpdatePanes(Vec<AIAgentPane>),
     /// A pane started or stopped being "yesed".
     ChangePaneState { pane_id: u32, yesing: bool },
 }

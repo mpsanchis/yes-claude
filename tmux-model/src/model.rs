@@ -1,15 +1,15 @@
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 
-use yes_claude_types::{ClaudePane, PaneState};
+use yes_claude_types::{AIAgentPane, PaneState};
 
-/// Tracked Claude panes, keyed by their global tmux pane id.
+/// Tracked AI agent panes, keyed by their global tmux pane id.
 #[derive(Debug, Default)]
-pub struct TmuxClaudePanesModel {
+pub struct TmuxAIAgentPanesModel {
     panes: HashMap<u32, PaneState>,
 }
 
-impl TmuxClaudePanesModel {
+impl TmuxAIAgentPanesModel {
     pub fn new() -> Self {
         Self::default()
     }
@@ -21,7 +21,7 @@ impl TmuxClaudePanesModel {
     /// Syncs the model with a snapshot of the panes currently in tmux.
     /// Known panes get their metadata refreshed (keeping `yesing`), new panes are added,
     /// and panes missing from the snapshot are dropped.
-    pub fn update_panes_from(&mut self, panes: Vec<ClaudePane>) {
+    pub fn update_panes_from(&mut self, panes: Vec<AIAgentPane>) {
         let live_ids: HashSet<u32> = panes.iter().map(|pane| pane.id).collect();
 
         for pane in panes {
@@ -47,22 +47,23 @@ impl TmuxClaudePanesModel {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use yes_claude_types::PaneMetadata;
+    use yes_claude_types::{AIAgent, PaneMetadata};
 
-    fn pane(id: u32, session: &str) -> ClaudePane {
-        ClaudePane {
+    fn pane(id: u32, session: &str) -> AIAgentPane {
+        AIAgentPane {
             id,
             metadata: PaneMetadata {
                 session_name: session.to_owned(),
                 window_index: 0,
                 pane_index: 0,
+                agent: AIAgent::Claude,
             },
         }
     }
 
     #[test]
     fn adds_updates_and_removes_panes_keeping_yesing() {
-        let mut model = TmuxClaudePanesModel::new();
+        let mut model = TmuxAIAgentPanesModel::new();
         model.update_panes_from(vec![pane(1, "a"), pane(2, "b")]);
         model.change_pane_state(1, true);
 
@@ -78,7 +79,7 @@ mod tests {
 
     #[test]
     fn change_state_of_unknown_pane_is_ignored() {
-        let mut model = TmuxClaudePanesModel::new();
+        let mut model = TmuxAIAgentPanesModel::new();
         model.change_pane_state(42, true);
         assert!(model.panes().is_empty());
     }

@@ -1,7 +1,7 @@
 use tokio::sync::{broadcast, mpsc};
 use yes_claude_api::{ModelStateEvent, UpdateModelEvent};
 use yes_claude_tmux_actuator::send_yes_to_tmux;
-use yes_claude_tmux_model::TmuxClaudePanesModel;
+use yes_claude_tmux_model::TmuxAIAgentPanesModel;
 use yes_claude_tmux_monitor::monitor_tmux;
 
 mod socket_server;
@@ -18,12 +18,19 @@ async fn main() {
 
     tokio::spawn(monitor_tmux(inbound_tx.clone()));
     tokio::spawn(send_yes_to_tmux(outbound_rx.resubscribe()));
-    tokio::spawn(socket_server::run(
-        outbound_rx.resubscribe(),
-        inbound_tx.clone(),
-    ));
+    let socket_outbound_rx = outbound_rx.resubscribe();
+    let socket_inbound_tx = inbound_tx.clone();
+    tokio::spawn(async move {
+        // Without its socket the daemon can't serve anyone, so don't linger silently.
+        if socket_server::run(socket_outbound_rx, socket_inbound_tx)
+            .await
+            .is_err()
+        {
+            std::process::exit(1);
+        }
+    });
 
-    let mut model = TmuxClaudePanesModel::new();
+    let mut model = TmuxAIAgentPanesModel::new();
     while let Some(event) = inbound_rx.recv().await {
         match event {
             UpdateModelEvent::UpdatePanes(panes) => model.update_panes_from(panes),

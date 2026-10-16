@@ -1,3 +1,3 @@
 mod model;
 
-pub use model::TmuxClaudePanesModel;
+pub use model::TmuxAIAgentPanesModel;

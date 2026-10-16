@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{ClaudePane, PaneMetadata};
+use crate::{AIAgentPane, PaneMetadata};
 
 /// Everything we know about a single pane: what tmux told us, plus our own state.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -9,8 +9,8 @@ pub struct PaneState {
     pub yesing: bool,
 }
 
-impl From<ClaudePane> for PaneState {
-    fn from(pane: ClaudePane) -> Self {
+impl From<AIAgentPane> for PaneState {
+    fn from(pane: AIAgentPane) -> Self {
         Self {
             metadata: pane.metadata,
             yesing: false,

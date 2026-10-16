@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, bail};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::net::{UnixListener, UnixStream};
 use tokio::sync::broadcast::error::RecvError;
@@ -55,7 +55,17 @@ pub async fn run(
     inbound_tx: mpsc::Sender<UpdateModelEvent>,        // Clients -> Server -> Model
 ) -> Result<()> {
     // Initialize socket
-    let socket_listener = UnixListener::bind(get_socket_path())?;
+    let socket_path = get_socket_path();
+    // Someone is listening: another daemon is already serving, so don't steal its socket.
+    if UnixStream::connect(&socket_path).await.is_ok() {
+        bail!(
+            "another daemon is already listening on {}",
+            socket_path.display()
+        );
+    }
+    // Nobody is listening, so a leftover file is stale (e.g. from a crash): bind would fail on it.
+    let _ = std::fs::remove_file(&socket_path);
+    let socket_listener = UnixListener::bind(&socket_path)?;
 
     // Main loop: wait for connections from clients
     // Pass over channels so that they can communicate directly

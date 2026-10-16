@@ -1,7 +1,7 @@
+use ratatui::Frame;
 use ratatui::layout::{Constraint, Layout};
 use ratatui::style::{Modifier, Style};
 use ratatui::widgets::{Paragraph, Row, Table, TableState};
-use ratatui::Frame;
 
 use crate::app::App;
 
@@ -12,7 +12,7 @@ pub fn render(frame: &mut Frame, app: &App) {
     if !app.has_state() {
         frame.render_widget("Waiting for daemon...", list_area);
     } else {
-        let header = Row::new(["yes", "pane_id", "session:window.pane"])
+        let header = Row::new(["yes", "pane_id", "agent", "session:window.pane"])
             .style(Style::new().add_modifier(Modifier::BOLD));
         let rows: Vec<Row> = app
             .sorted_panes()
@@ -22,14 +22,16 @@ pub fn render(frame: &mut Frame, app: &App) {
                 Row::new([
                     if pane.yesing { "[x]" } else { "[ ]" }.to_owned(),
                     format!("%{id}"),
+                    m.agent.as_str().to_owned(),
                     format!("{}:{}.{}", m.session_name, m.window_index, m.pane_index),
                 ])
             })
             .collect();
         let widths = [
-            Constraint::Length(3),  // "yes" / "[x]"
-            Constraint::Length(7),  // "pane_id" (ids like %1234 fit too)
-            Constraint::Fill(1),    // session:window.pane
+            Constraint::Length(3), // "yes" / "[x]"
+            Constraint::Length(7), // "pane_id" (ids like %1234 fit too)
+            Constraint::Length(6), // "agent" / "claude"
+            Constraint::Fill(1),   // session:window.pane
         ];
         let table = Table::new(rows, widths)
             .header(header)
