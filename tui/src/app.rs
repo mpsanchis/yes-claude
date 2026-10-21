@@ -42,7 +42,7 @@ impl App {
         self.state.is_some()
     }
 
-    /// Panes as `(id, state)`, in a stable order.
+    /// Panes as `(id, state)`, ordered by session name (alphabetical), then window, then pane index.
     pub fn sorted_panes(&self) -> Vec<(u32, &PaneState)> {
         let mut panes: Vec<_> = self
             .state
@@ -50,7 +50,18 @@ impl App {
             .flat_map(|state| state.panes.iter())
             .map(|(id, pane)| (*id, pane))
             .collect();
-        panes.sort_by_key(|(id, _)| *id);
+        panes.sort_by(|(id_a, a), (id_b, b)| {
+            let (a, b) = (&a.metadata, &b.metadata);
+            a.session_name
+                .to_lowercase()
+                .cmp(&b.session_name.to_lowercase())
+                // Sessions differing only by case: keep a deterministic order.
+                .then_with(|| a.session_name.cmp(&b.session_name))
+                .then_with(|| a.window_index.cmp(&b.window_index))
+                .then_with(|| a.pane_index.cmp(&b.pane_index))
+                // Same location (shouldn't happen): fall back to the pane id.
+                .then_with(|| id_a.cmp(id_b))
+        });
         panes
     }
 
