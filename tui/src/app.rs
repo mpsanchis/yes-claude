@@ -96,7 +96,9 @@ impl App {
         let Some(current) = self.selected_index() else {
             return;
         };
-        let next = current.saturating_add_signed(delta).min(panes.len() - 1);
+        // Wrap around: up from the first row goes to the last, down from the last to the first.
+        // `rem_euclid` (unlike `%`) is never negative, so -1 maps to the last row.
+        let next = (current as isize + delta).rem_euclid(panes.len() as isize) as usize;
         self.selected = Some(panes[next].0);
     }
 
