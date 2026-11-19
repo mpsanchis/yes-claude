@@ -2,17 +2,27 @@ use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
-use anyhow::{Error, Result};
+use anyhow::{Context, Error, Result};
 
 fn launch_daemon() -> Result<()> {
     // Look for the daemon next to this executable (target/debug/ or target/release/, or wherever
     // both were installed) so it doesn't need to be on PATH.
     let daemon_path = std::env::current_exe()?.with_file_name("yes-claude-d");
-    let _child = Command::new(daemon_path)
+    let _child = Command::new(&daemon_path)
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        .spawn()?;
+        .spawn()
+        .with_context(|| {
+            if daemon_path.exists() {
+                format!("Failed to launch daemon at {}", daemon_path.display())
+            } else {
+                format!(
+                    "Daemon binary not found at {}. Build it with `cargo build` (or `cargo build -p yes-claude-daemon`)",
+                    daemon_path.display()
+                )
+            }
+        })?;
     Ok(())
 }
 
